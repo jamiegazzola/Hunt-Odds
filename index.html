@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>HuntSmart Canada — Know Your Draw Odds</title>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<link href="./style.css" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+<a class="nav-brand" onclick="showPage('home')">
+<div class="nav-brand-top">HuntSmart <span>Canada</span></div>
+<div class="nav-brand-sub">Know your draw odds</div>
+</a>
+<div class="nav-center">
+<div class="nav-links">
+<a class="nav-link active" id="navHome" onclick="showPage('home')">Home</a>
+<a class="nav-link" id="navBC" onclick="showPage('filter')">BC</a>
+<a class="nav-link" id="navAlberta" onclick="goToAlberta()">Alberta</a>
+<a class="nav-link" id="navMap" onclick="showPage('map')">Map</a>
+<a class="nav-link" id="navCompare" onclick="showPage('compare')">Compare</a>
+<a class="nav-link" id="navSaved" onclick="showPage('saved')">Saved <span class="saved-count-badge" id="savedBadge" style="display:none">0</span></a>
+</div>
+</div>
+</nav>
+
+<!-- ══════════════ HOME PAGE ══════════════ -->
+<div id="homePage">
+<div class="hero-photo">
+<div class="hero-photo-bg" style="background-image:url('./images/hero-bg.jpg')"></div>
+<div class="hero-photo-overlay"></div>
+<div class="hero-photo-content">
+<div class="hero-eyebrow">British Columbia &amp; Alberta · 2025 Season</div>
+<h1 class="hero-title">Hunt smarter. Apply with <span>confidence.</span></h1>
+<p class="hero-body">Draw odds, success rates, and personalized priority analysis for BC and Alberta hunters — so you apply where it counts.</p>
+<div class="hero-actions">
+<div class="province-cards">
+<button class="province-card" onclick="showPage('filter')">
+<div class="province-card-flag">🏔</div>
+<div class="province-card-info">
+<div class="province-card-name">British Columbia</div>
+<div class="province-card-stats">1,138 draws · 10 species · 25+ yrs data</div>
+</div>
+<div class="province-card-cta">Explore →</div>
+</button>
+<button class="province-card" onclick="goToAlberta()">
+<div class="province-card-flag">🌾</div>
+<div class="province-card-info">
+<div class="province-card-name">Alberta</div>
+<div class="province-card-stats"><span id="abHomeDrawCount">1,236</span> draws · 8 species · 3 yrs data</div>
+</div>
+<div class="province-card-cta">Explore →</div>
+</button>
+</div>
+</div>
+</div>
+</div>
+<hr class="page-divider"/>
+<div class="section">
+<div class="section-title">How it works</div>
+<div class="section-sub">Four steps to hunting smarter.</div>
+<div class="steps-grid">
+<div class="step">
+<div class="step-num">01</div>
+<div class="step-title">Choose your province</div>
+<div class="step-body">Select British Columbia or Alberta. Each province has its own draw system, data, and odds — we cover both.</div>
+</div>
+<div class="step">
+<div class="step-num">02</div>
+<div class="step-title">Set up your Alberta profile</div>
+<div class="step-body">For Alberta, enter your residency status and priority points by category once. The app uses your profile to show your personal odds across every draw.</div>
+</div>
+<div class="step">
+<div class="step-num">03</div>
+<div class="step-title">Filter by species, region &amp; odds</div>
+<div class="step-body">Narrow results by species, wildlife management unit, and minimum draw odds. Find draws where you have a realistic shot.</div>
+</div>
+<div class="step">
+<div class="step-num">04</div>
+<div class="step-title">Explore personalized results</div>
+<div class="step-body">Each draw card shows historical success rates, draw odds by year, and for Alberta — your personal odds at your priority level.</div>
+</div>
+</div>
+</div>
+<hr class="page-divider"/>
+<div class="section">
+<div class="section-title">Browse by species</div>
+<div class="section-sub">Click any species to jump straight to its BC draws.</div>
+<div class="species-grid">
+<div class="sp-card" onclick="filterBySpecies('Bighorn Sheep')"><div class="sp-name">Bighorn Sheep</div><div class="sp-count">41 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Bison')"><div class="sp-name">Bison</div><div class="sp-count">15 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Caribou')"><div class="sp-name">Caribou</div><div class="sp-count">17 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Moose')"><div class="sp-name">Moose</div><div class="sp-count">529 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Mountain Goat')"><div class="sp-name">Mountain Goat</div><div class="sp-count">186 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Mule Deer')"><div class="sp-name">Mule Deer</div><div class="sp-count">92 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Rocky Mountain Elk')"><div class="sp-name">Rocky Mountain Elk</div><div class="sp-count">99 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Roosevelt Elk')"><div class="sp-name">Roosevelt Elk</div><div class="sp-count">129 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Thinhorn Sheep')"><div class="sp-name">Thinhorn Sheep</div><div class="sp-count">6 draws</div></div>
+<div class="sp-card" onclick="filterBySpecies('Turkey')"><div class="sp-name">Turkey</div><div class="sp-count">24 draws</div></div>
+</div>
+</div>
+</div>
+
+<!-- ══════════════ ALBERTA PROFILE PAGE ══════════════ -->
+<div id="abProfilePage" style="display:none"></div>
+
+<!-- ══════════════ ALBERTA FILTER PAGE ══════════════ -->
+<div id="abFilterPage" style="display:none">
+<div id="abProfileBanner"></div>
+<div class="filter-page-wrap">
+<div class="filter-page-bg" style="background-image:url('./images/filter-bg.jpg')"></div>
+<div class="filter-page-overlay"></div>
+<div class="filter-page-content">
+<div class="fp-header">
+<div class="fp-eyebrow">Alberta · Draw Odds</div>
+<h2 class="fp-title">Find your hunt</h2>
+</div>
+<div class="fp-card">
+<div class="fp-section">
+<div class="fp-section-label">Species <span class="fp-clear" onclick="abFpClearFilter('species')">Clear</span></div>
+<div class="fp-chips" id="abFpSpeciesChips"></div>
+</div>
+<div class="fp-section" id="abPointsSection">
+<div class="fp-section-label">Your Priority Points</div>
+<div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">Quick entry by species. For detailed per-category control, <a href="#" onclick="event.preventDefault();showPage('abProfile')" style="color:var(--accent)">edit your full profile</a>.</div>
+<div id="abPointsInputs"></div>
+</div>
+<div class="fp-section">
+<div class="fp-section-label">Management Unit <span class="fp-clear" onclick="abFpClearFilter('wmu')">Clear</span></div>
+<div class="fp-chips" id="abFpWMUChips" style="max-height:160px;overflow-y:auto;gap:6px"></div>
+</div>
+<div class="fp-section">
+<div class="fp-section-label">Minimum Odds</div>
+<div class="fp-odds-wrap">
+<div class="fp-odds-readout">
+<span class="fp-odds-num" id="abFpOddsNum">Any</span>
+<span class="fp-odds-unit" id="abFpOddsUnit"></span>
+<span class="fp-odds-hint" id="abFpOddsHint">Showing all draws</span>
+</div>
+<input class="fp-slider" id="abFpOddsSlider" max="7" min="0" oninput="abFpOnSlider(this.value)" step="1" type="range" value="0"/>
+<div class="fp-ticks"><span>Any</span><span>1%</span><span>2%</span><span>5%</span><span>10%</span><span>20%</span><span>50%</span><span>75%</span></div>
+</div>
+</div>
+</div>
+<div class="fp-match-display">
+<div class="fp-match-num" id="abFpMatchNum">—</div>
+<div class="fp-match-label">draws match your filters</div>
+</div>
+<div class="fp-sort-row">
+<span class="fp-sort-label">Sort by</span>
+<div class="fp-sort-chips" id="abFpSortChips">
+<button class="fp-sort-chip active" onclick="abFpSetSort('odds',this)">Best Odds</button>
+<button class="fp-sort-chip" onclick="abFpSetSort('harvest',this)">Harvest Success Rate</button>
+<button class="fp-sort-chip" onclick="abFpSetSort('season',this)">Earliest Season Date</button>
+<button class="fp-sort-chip" onclick="abFpSetSort('points',this)">Least Points To Draw</button>
+<button class="fp-sort-chip" onclick="abFpSetSort('species',this)">Species</button>
+</div>
+</div>
+<button class="fp-cta" onclick="abFpGoToDraws()">
+<span id="abFpCtaLabel">Explore Results</span>
+<svg fill="none" height="16" viewbox="0 0 16 16" width="16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path></svg>
+</button>
+<button class="fp-skip" onclick="abFpReset(); abFpGoToDraws()">Skip filters — explore everything</button>
+</div>
+</div>
+</div>
+
+<!-- ══════════════ ALBERTA DRAWS PAGE ══════════════ -->
+<div id="abDrawsPage" style="display:none">
+<div id="abProfileBannerDraws"></div>
+<div class="draws-layout">
+<aside class="sidebar">
+<div class="sidebar-inner" id="abSidebarInner">
+<div class="filter-block">
+<div class="filter-heading">Species <span class="filter-clear" onclick="abSidebarClearFilter('species')">Clear</span></div>
+<div class="chips-wrap" id="abSpeciesChips"></div>
+</div>
+<div class="filter-block">
+<div class="filter-heading">Management Unit <span class="filter-clear" onclick="abSidebarClearFilter('wmu')">Clear</span></div>
+<div class="mu-list" id="abWMUList"></div>
+</div>
+<div class="filter-block">
+<div class="filter-heading">Profile Filter</div>
+<div class="chips-wrap">
+<button class="chip active" onclick="abSetProfileFilter('all',this)">All draws</button>
+<button class="chip" onclick="abSetProfileFilter('has_profile',this)">Has my pts</button>
+<button class="chip" onclick="abSetProfileFilter('above_threshold',this)">Above threshold</button>
+<button class="chip" onclick="abSetProfileFilter('below_threshold',this)">Below threshold</button>
+</div>
+</div>
+<div class="filter-block">
+<div class="filter-heading">Minimum Odds</div>
+<div class="odds-readout">
+<div class="odds-big" id="abOddsDisplay">Any</div>
+<div class="odds-unit" id="abOddsUnit"></div>
+<div class="odds-sublabel" id="abOddsSubLabel">All draws</div>
+</div>
+<input id="abOddsSlider" max="7" min="0" oninput="abOnSlider(this.value)" step="1" type="range" value="0"/>
+<div class="odds-ticks"><span>Any</span><span>1%</span><span>2%</span><span>5%</span><span>10%</span><span>20%</span><span>50%</span><span>75%</span></div>
+</div>
+<button class="reset-btn" onclick="abResetAll()">↺ Reset All Filters</button>
+</div>
+</aside>
+<main class="draws-main">
+<div class="draws-topbar">
+<div class="draws-title-block" style="position:relative;flex:1">
+<div class="draws-title">Alberta Draw Odds</div>
+<div class="draws-sub"><strong id="abCountDisplay">0</strong> draws matching your filters</div>
+<button onclick="showPage('abProfile')" style="position:absolute;top:0;right:0;font-size:12px;font-weight:600;padding:6px 14px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:8px;color:var(--accent);cursor:pointer;white-space:nowrap">⚙ Edit Profile</button>
+</div>
+<div class="sort-controls">
+<span class="sort-label">Sort:</span>
+<button class="sort-btn active" id="abSortOddsBtn" onclick="abSetSort('odds')">Best Odds</button>
+<button class="sort-btn" id="abSortHarvestBtn" onclick="abSetSort('harvest')">Harvest Success Rate</button>
+<button class="sort-btn" id="abSortSeasonBtn" onclick="abSetSort('season')">Earliest Season Date</button>
+<button class="sort-btn" id="abSortPointsBtn" onclick="abSetSort('points')">Least Points To Draw</button>
+<button class="sort-btn" id="abSortSpeciesBtn" onclick="abSetSort('species')">Species</button>
+</div>
+</div>
+<div class="legend">
+<div class="legend-item"><div class="ldot ldot-g"></div> Good Odds (&ge;20%)</div>
+<div class="legend-item"><div class="ldot ldot-y"></div> Fair Odds (5–20%)</div>
+<div class="legend-item"><div class="ldot ldot-r"></div> Tough Draw (&lt;5%)</div>
+</div>
+<div class="cards-grid" id="abCardsGrid"></div>
+</main>
+</div>
+</div>
+
+<!-- ══════════════ COMPARE PAGE ══════════════ -->
+<div id="comparePage" style="display:none"></div>
+
+<!-- ══════════════ MAP PAGE ══════════════ -->
+<div id="mapPage" style="display:none">
+<div class="map-page-wrap">
+<div class="map-page-sidebar">
+<div class="map-page-header">
+<h2 class="map-page-title">BC Hunt Map</h2>
+<p class="map-page-sub">Click any Wildlife Management Unit to see its draws.</p>
+</div>
+<div class="map-filter-block">
+<div class="map-filter-label">Filter by Species</div>
+<div class="map-species-chips" id="mapSpeciesChips"></div>
+</div>
+<div class="map-selected-panel" id="mapSelectedPanel" style="display:none">
+<div class="map-sel-header">
+<div class="map-sel-mu" id="mapSelMU">—</div>
+<div class="map-sel-area" id="mapSelArea">—</div>
+</div>
+<div class="map-sel-draws" id="mapSelDraws"></div>
+<button class="map-view-all-btn" id="mapViewAllBtn" onclick="viewMapMUDraws()" style="display:none">
+          View all draws for this MU →
+        </button>
+</div>
+<div class="map-legend">
+<div class="map-legend-title">Legend</div>
+<div class="map-legend-row"><span class="map-leg-dot map-leg-green"></span> Good Odds (≥ 5%)</div>
+<div class="map-legend-row"><span class="map-leg-dot map-leg-yellow"></span> Fair Odds (1–5%)</div>
+<div class="map-legend-row"><span class="map-leg-dot map-leg-red"></span> Tough Draw (&lt; 1%)</div>
+<div class="map-legend-row"><span class="map-leg-dot map-leg-grey"></span> No draws</div>
+</div>
+</div>
+<div class="map-container">
+<div id="leafletMap" style="width:100%;height:100%;"></div>
+<div class="map-loading" id="mapLoading">
+<div class="map-loading-inner">
+<div class="map-spinner"></div>
+<div>Loading WMU boundaries…</div>
+<div style="font-size:11px;margin-top:6px;opacity:0.6">Fetching from BC Open Maps</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ══════════════ SAVED PAGE ══════════════ -->
+<div id="savedPage" style="display:none">
+<div class="saved-wrap">
+<div class="saved-header">
+<div>
+<h2 class="saved-title">Saved Draws</h2>
+<p class="saved-sub" id="savedSubtitle">Your shortlisted hunts for comparison.</p>
+</div>
+<div class="saved-header-actions">
+<button class="compare-btn" id="compareBtn" onclick="toggleCompare()" style="display:none">
+          Compare Selected
+        </button>
+<button class="clear-saved-btn" onclick="clearAllSaved()">Clear All</button>
+</div>
+</div>
+<!-- Compare panel (shown when 2+ selected) -->
+<div class="compare-panel" id="comparePanel" style="display:none">
+<div class="compare-grid" id="compareGrid"></div>
+<button class="compare-close" onclick="closeCompare()">✕ Close comparison</button>
+</div>
+<!-- Saved cards grid -->
+<div class="cards-grid" id="savedCardsGrid">
+<div class="saved-empty" id="savedEmpty">
+<div class="saved-empty-icon">☆</div>
+<div class="saved-empty-title">No saved draws yet</div>
+<p class="saved-empty-sub">Tap the star on any draw card to save it here for easy comparison.</p>
+<button class="hero-cta" onclick="showPage('filter')" style="margin-top:16px;width:auto;padding:11px 24px;font-size:13px">Browse Draws</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ══════════════ FILTER PAGE ══════════════ -->
+<div id="filterPage" style="display:none">
+<div class="filter-page-wrap">
+<div class="filter-page-bg" style="background-image:url('./images/filter-bg.jpg')"></div>
+<div class="filter-page-overlay"></div>
+<div class="filter-page-content">
+<div class="fp-header">
+<div class="fp-eyebrow">2025 Limited Entry Draw</div>
+<h2 class="fp-title">Find your hunt</h2>
+</div>
+<div class="fp-card">
+<!-- Species -->
+<div class="fp-section">
+<div class="fp-section-label">
+            Species
+            <span class="fp-clear" id="fpClearSpecies" onclick="fpClearFilter('species')">Clear</span>
+</div>
+<div class="fp-chips" id="fpSpeciesChips"></div>
+</div>
+<!-- Management Unit -->
+<div class="fp-section">
+<div class="fp-section-label">
+            Management Unit
+            <span class="fp-clear" id="fpClearMU" onclick="fpClearFilter('mu')">Clear</span>
+</div>
+<div class="fp-mu-grid" id="fpMUGrid"></div>
+</div>
+<!-- Minimum Odds -->
+<div class="fp-section">
+<div class="fp-section-label">Minimum Odds</div>
+<div class="fp-odds-wrap">
+<div class="fp-odds-readout">
+<span class="fp-odds-num" id="fpOddsNum">Any</span>
+<span class="fp-odds-unit" id="fpOddsUnit"></span>
+<span class="fp-odds-hint" id="fpOddsHint">Showing all draws</span>
+</div>
+<input class="fp-slider" id="fpOddsSlider" max="7" min="0" oninput="fpOnSlider(this.value)" step="1" type="range" value="0"/>
+<div class="fp-ticks">
+<span>Any</span><span>1%</span><span>2%</span><span>5%</span><span>10%</span><span>20%</span><span>50%</span><span>75%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Live match counter -->
+<div class="fp-match-display">
+<div class="fp-match-num" id="fpMatchNum">1,138</div>
+<div class="fp-match-label">draws match your filters</div>
+</div>
+<!-- Sort picker on filter page -->
+<div class="fp-sort-row">
+<span class="fp-sort-label">Sort by</span>
+<div class="fp-sort-chips" id="fpSortChips">
+<button class="fp-sort-chip active" onclick="fpSetSort('odds',this)">Best Odds</button>
+<button class="fp-sort-chip" onclick="fpSetSort('success',this)">Success Rate</button>
+<button class="fp-sort-chip" onclick="fpSetSort('season',this)">Earliest Season</button>
+</div>
+</div>
+<!-- CTA -->
+<button class="fp-cta" onclick="applyFiltersAndGoToDraws()">
+<span id="fpCtaLabel">Show Results</span>
+<svg fill="none" height="16" viewbox="0 0 16 16" width="16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path></svg>
+</button>
+<button class="fp-skip" onclick="fpReset(); applyFiltersAndGoToDraws()">Skip filters — show everything</button>
+</div>
+</div>
+</div>
+<!-- ══════════════ DRAWS PAGE ══════════════ -->
+<div id="drawsPage">
+<div class="draws-layout">
+<aside class="sidebar">
+<!-- Mobile toggle -->
+<div class="sidebar-mobile-toggle" id="sidebarToggle" onclick="toggleSidebar()" style="display:none">
+<span>Filters</span>
+<span class="sidebar-toggle-arrow" id="sidebarArrow">▼</span>
+</div>
+<div class="sidebar-inner" id="sidebarInner">
+<div class="filter-block">
+<div class="filter-heading">
+          Species
+          <span class="filter-clear" id="clearSpecies" onclick="clearFilter('species')">Clear</span>
+</div>
+<div class="chips-wrap" id="speciesChips"></div>
+</div>
+<div class="filter-block">
+<div class="filter-heading">
+          Management Unit
+          <span class="filter-clear" id="clearMU" onclick="clearFilter('mu')">Clear</span>
+</div>
+<div class="mu-list" id="muList"></div>
+</div>
+<div class="filter-block">
+<div class="filter-heading">Minimum Odds</div>
+<div class="odds-readout">
+<div class="odds-big" id="oddsDisplay">Any</div>
+<div class="odds-unit" id="oddsUnit"></div>
+<div class="odds-sublabel" id="oddsSubLabel">All draws</div>
+</div>
+<input id="oddsSlider" max="7" min="0" oninput="onSlider(this.value)" step="1" type="range" value="0"/>
+<div class="odds-ticks">
+<span>Any</span><span>1%</span><span>2%</span><span>5%</span><span>10%</span><span>20%</span><span>50%</span><span>75%</span>
+</div>
+</div>
+<button class="reset-btn" onclick="resetAll()">↺ Reset All Filters</button>
+</div><!-- /sidebar-inner -->
+</aside>
+<main class="draws-main">
+<div class="draws-topbar">
+<div class="draws-title-block">
+<div class="draws-title" id="resultsTitle">All Draws</div>
+<div class="draws-sub"><strong id="countDisplay">0</strong> draws matching your filters</div>
+</div>
+<div class="sort-controls">
+<span class="sort-label">Sort:</span>
+<button class="sort-btn active" id="sortOddsBtn" onclick="setSort('odds')">Best Odds</button>
+<button class="sort-btn" id="sortSuccessBtn" onclick="setSort('success')">Success Rate</button>
+<button class="sort-btn" id="sortSeasonBtn" onclick="setSort('season')">Earliest Season Date</button>
+</div>
+</div>
+<div class="legend">
+<div class="legend-item"><div class="ldot ldot-g"></div> Good Odds (≥ 5%)</div>
+<div class="legend-item"><div class="ldot ldot-y"></div> Fair Odds (1–5%)</div>
+<div class="legend-item"><div class="ldot ldot-r"></div> Tough Draw (&lt; 1%)</div>
+</div>
+<div class="cards-grid" id="cardsGrid"></div>
+</main>
+</div>
+</div>
+
+
+<script defer="" src="./app.js"></script></body>
+</html>
