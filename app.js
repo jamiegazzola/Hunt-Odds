@@ -46,15 +46,41 @@ async function loadABHarvest() {
   try {
     const r = await fetch(AB_HARVEST_URL);
     const arr = r.ok ? await r.json() : [];
-    AB_HARVEST = {};
+    // Three lookup tiers — checked in order by getABHarvest():
+    // Tier 1: species||draw  (exact draw name — most specific)
+    // Tier 2: species||huntCode
+    // Tier 3: species||wmu  (fallback)
+    AB_HARVEST = { byDraw: {}, byHuntCode: {}, byWMU: {} };
     for (const rec of arr) {
-      const key = `${rec.species}||${rec.draw}||${rec.wmu}`;
-      // Prefer draw_choice matches over wmu matches
-      if (!(key in AB_HARVEST) || rec.matchedBy === 'draw_choice') {
-        AB_HARVEST[key] = rec.participantSuccessPercent;
+      const sp = rec.species;
+      const pct = rec.participantSuccessPercent;
+      if (rec.draw) {
+        const k = `${sp}||${rec.draw}`;
+        if (!(k in AB_HARVEST.byDraw) || rec.matchedBy === 'draw_choice') AB_HARVEST.byDraw[k] = pct;
+      }
+      if (rec.huntCode) {
+        const k = `${sp}||${rec.huntCode}`;
+        if (!(k in AB_HARVEST.byHuntCode)) AB_HARVEST.byHuntCode[k] = pct;
+      }
+      if (rec.wmu) {
+        const k = `${sp}||${rec.wmu}`;
+        if (!(k in AB_HARVEST.byWMU)) AB_HARVEST.byWMU[k] = pct;
       }
     }
-  } catch(e) { AB_HARVEST = {}; }
+  } catch(e) { AB_HARVEST = { byDraw:{}, byHuntCode:{}, byWMU:{} }; }
+}
+
+function getABHarvest(species, draw, huntCode, wmu) {
+  if (!AB_HARVEST) return null;
+  const k1 = `${species}||${draw}`;
+  if (AB_HARVEST.byDraw && k1 in AB_HARVEST.byDraw) return AB_HARVEST.byDraw[k1];
+  if (huntCode) {
+    const k2 = `${species}||${huntCode}`;
+    if (AB_HARVEST.byHuntCode && k2 in AB_HARVEST.byHuntCode) return AB_HARVEST.byHuntCode[k2];
+  }
+  const k3 = `${species}||${wmu}`;
+  if (AB_HARVEST.byWMU && k3 in AB_HARVEST.byWMU) return AB_HARVEST.byWMU[k3];
+  return null;
 }
 
 async function loadWriteups() {
@@ -1360,7 +1386,8 @@ function buildABCards() {
   const groups = {};
   for (const r of AB_DATA) {
     const key = r.species + '||' + r.wmu + '||' + r.draw;
-    if (!groups[key]) groups[key] = { species:r.species, wmu:r.wmu, draw:r.draw, rows:[] };
+    if (!groups[key]) groups[key] = { species:r.species, wmu:r.wmu, draw:r.draw, huntCode:r.huntCode||null, rows:[] };
+    if (r.huntCode && !groups[key].huntCode) groups[key].huntCode = r.huntCode;
     groups[key].rows.push(r);
   }
 
@@ -1438,11 +1465,10 @@ function buildABCards() {
     histYears.forEach(h => { yearlyOddsObj[h.year] = h.odds; });
 
     const successRate = latestOdds / 100;
-    const harvestKey = `${g.species}||${g.draw}||${g.wmu}`;
-    const harvestSuccess = (AB_HARVEST && harvestKey in AB_HARVEST) ? AB_HARVEST[harvestKey] : null;
+    const harvestSuccess = getABHarvest(g.species, g.draw, g.huntCode, g.wmu);
 
     return {
-      species: g.species, wmu: g.wmu, draw: g.draw,
+      species: g.species, wmu: g.wmu, draw: g.draw, huntCode: g.huntCode,
       season: latestAgg.season, quota: latestAgg.quota,
       latestYear, latestOdds, personalOdds, personalRow,
       avgOdds: wavg, histYears, yearlyOddsObj,
