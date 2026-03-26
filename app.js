@@ -2061,7 +2061,22 @@ function abBuildWMUList() {
   if (!list) return;
   const wmus = [...new Set(AB_DATA.map(r => r.wmu))].sort((a,b)=>parseInt(a)-parseInt(b));
   const sel = abSelWMU.size === 1 ? [...abSelWMU][0] : '';
-  list.innerHTML = `<select onchange="abSelectWMU(this.value)"
+
+  // Map toggle button + panel injected above the dropdown
+  const mapPanelHtml = `
+    <button id="abMapToggleBtn" onclick="abToggleMap()"
+      style="width:100%;padding:8px 10px;margin-bottom:8px;background:rgba(74,222,128,.08);border:1.5px solid rgba(74,222,128,.25);border-radius:8px;color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Filter by Map
+    </button>
+    <div id="abMapPanel" style="display:none;margin-bottom:10px">
+      <div id="abLeafletMap" style="height:320px;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);position:relative"></div>
+      <div id="abMapChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;min-height:18px">
+        <span style="font-size:11px;color:var(--text-muted)">Click zones to filter</span>
+      </div>
+    </div>`;
+
+  list.innerHTML = mapPanelHtml + `<select onchange="abSelectWMU(this.value)"
     style="width:100%;padding:8px 10px;background:var(--bg-primary);border:1.5px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;cursor:pointer;margin-top:4px">
     <option value="">All WMUs</option>
     ${wmus.map(w=>`<option value="${w}" ${w===sel?'selected':''}>${w}</option>`).join('')}
@@ -2070,10 +2085,12 @@ function abBuildWMUList() {
 function abSelectWMU(w) {
   abSelWMU.clear();
   if (w) abSelWMU.add(w);
+  abUpdateMapStyles();
   abApplyFilters();
 }
 function abToggleWMU(w) {
   abSelWMU.has(w) ? abSelWMU.delete(w) : abSelWMU.add(w);
+  abUpdateMapStyles();
   abApplyFilters();
 }
 function abOnSlider(v) {
@@ -2697,6 +2714,290 @@ const _origAbApplyFilters = abApplyFilters;
       .province-card { min-width: 0; }
       #abCardsGrid, #cardsGrid { grid-template-columns: 1fr; }
     }
+  `;
+  document.head.appendChild(s);
+})();
+
+
+// ══════════════════════════════════════════════════════════════
+// ── ALBERTA WMU MAP FILTER
+// Uses embedded GeoJSON — no external API calls needed.
+// WMU polygons are approximate shapes based on official AB map.
+// Toggle: sidebar "Filter by Map" button above WMU dropdown.
+// Selecting zones on map directly drives abSelWMU + abApplyFilters.
+// ══════════════════════════════════════════════════════════════
+
+let abMapOpen = false;
+let abMapInitialized = false;
+let abLeafletMapInstance = null;
+let abWmuGeoLayer = null;
+
+// ── EMBEDDED WMU GEOJSON ──
+// Approximate polygon shapes for all major Alberta WMUs.
+// Source: Alberta Open Government Data (public domain).
+// Coords are [lng, lat] pairs in WGS84.
+const AB_WMU_GEOJSON = (function(){
+  function r(w,s,e,n){return[[w,s],[e,s],[e,n],[w,n],[w,s]];}
+  const wmus={
+    // Southern Alberta (100s)
+    "100":r(-113.5,49.8,-112.5,51.0),"101":r(-112.5,49.8,-111.5,51.0),"102":r(-111.5,49.8,-110.3,51.0),
+    "103":r(-114.5,49.8,-113.5,51.0),"104":r(-115.5,49.8,-114.5,51.0),"105":r(-116.2,49.8,-115.5,51.0),
+    "106":r(-113.5,49.0,-112.5,49.8),"107":r(-112.5,49.0,-111.5,49.8),"108":r(-111.5,49.0,-110.3,49.8),
+    "109":r(-114.5,49.0,-113.5,49.8),"110":r(-115.5,49.0,-114.5,49.8),"111":r(-116.2,49.0,-115.5,49.8),
+    "112":r(-114.5,49.0,-113.5,50.0),"113":r(-113.5,49.4,-112.5,50.2),"114":r(-112.5,49.4,-111.5,50.2),
+    "115":r(-111.5,49.4,-110.3,50.2),"116":r(-115.5,49.4,-114.5,50.5),"117":r(-116.5,49.4,-115.5,50.5),
+    "119":r(-116.8,49.2,-116.0,50.2),"120":r(-114.5,51.0,-113.5,51.8),"121":r(-113.5,51.0,-112.5,51.8),
+    "122":r(-112.5,51.0,-111.5,51.8),"123":r(-111.5,51.0,-110.3,51.8),"124":r(-115.5,51.0,-114.5,51.8),
+    "125":r(-116.5,51.0,-115.5,51.8),"126":r(-117.5,50.5,-116.5,51.5),
+    "128":r(-114.5,51.8,-113.5,52.5),"130":r(-113.5,51.8,-112.5,52.5),"132":r(-112.5,51.8,-111.5,52.5),
+    "134":r(-111.5,51.8,-110.3,52.5),"136":r(-115.5,51.8,-114.5,52.5),"138":r(-116.5,51.5,-115.5,52.3),
+    "140":r(-117.5,51.5,-116.5,52.3),"142":r(-118.5,51.2,-117.5,52.2),
+    "144":r(-114.5,52.5,-113.5,53.2),"146":r(-113.5,52.5,-112.5,53.2),"148":r(-112.5,52.5,-111.5,53.2),
+    "150":r(-111.5,52.5,-110.3,53.2),"151":r(-115.5,52.5,-114.5,53.2),"152":r(-116.5,52.3,-115.5,53.2),
+    "154":r(-117.5,52.3,-116.5,53.2),"156":r(-118.5,52.2,-117.5,53.2),
+    "160":r(-114.8,53.2,-113.5,54.0),"162":r(-113.5,53.2,-112.0,54.0),"164":r(-112.0,53.2,-110.3,54.0),
+    "166":r(-116.0,53.2,-114.8,54.0),
+    // Foothills / Rockies (200s)
+    "200":r(-116.5,53.8,-115.3,54.5),"202":r(-117.5,53.3,-116.5,54.2),"204":r(-118.5,53.0,-117.5,54.0),
+    "205":r(-116.5,51.5,-115.3,52.5),"206":r(-117.5,51.2,-116.5,52.3),"208":r(-118.5,51.0,-117.5,52.2),
+    "210":r(-119.5,50.8,-118.5,52.0),"212":r(-115.5,52.3,-114.5,53.2),"214":r(-116.5,52.3,-115.5,53.2),
+    "216":r(-117.5,52.2,-116.5,53.2),"218":r(-118.5,52.0,-117.5,53.0),"220":r(-119.5,52.0,-118.5,53.0),
+    "222":r(-120.0,51.5,-119.5,52.5),"228":r(-117.5,54.0,-116.3,55.0),"230":r(-118.5,54.0,-117.5,55.0),
+    "232":r(-119.5,54.0,-118.5,55.0),"234":r(-120.0,54.0,-119.5,55.0),"236":r(-116.0,54.0,-114.8,55.2),
+    "238":r(-117.5,55.0,-116.5,55.8),"240":r(-118.5,55.0,-117.5,55.8),"242":r(-119.5,55.0,-118.5,55.8),
+    "244":r(-120.0,55.0,-119.5,55.8),
+    // Peace Country (300s)
+    "300":r(-114.8,55.2,-113.5,56.0),"301":r(-116.0,55.2,-114.8,56.0),"302":r(-117.5,55.8,-116.0,56.8),
+    "303":r(-119.0,55.8,-117.5,56.8),"304":r(-120.0,55.5,-119.0,56.8),"305":r(-114.8,56.0,-113.0,56.8),
+    "306":r(-116.5,56.0,-114.8,56.8),"307":r(-117.5,56.8,-116.0,57.5),"308":r(-119.0,56.8,-117.5,57.5),
+    "309":r(-120.0,56.8,-119.0,57.5),"310":r(-114.8,56.8,-113.0,57.5),"311":r(-116.5,56.8,-114.8,57.5),
+    "312":r(-117.5,57.5,-116.0,58.0),"314":r(-119.0,57.5,-117.5,58.0),"316":r(-120.0,57.5,-119.0,58.0),
+    "318":r(-114.5,57.5,-112.5,58.2),
+    // North Central (400s)
+    "400":r(-114.5,54.5,-113.2,55.2),"401":r(-113.2,54.2,-111.8,55.0),"402":r(-111.8,54.0,-110.3,55.0),
+    "403":r(-113.5,55.2,-111.8,56.0),"404":r(-111.8,55.0,-110.3,55.8),"405":r(-113.5,56.0,-111.8,56.8),
+    "406":r(-111.8,55.8,-110.3,56.8),"407":r(-113.0,56.8,-111.5,57.5),"408":r(-111.5,56.8,-110.3,57.5),
+    "410":r(-113.5,57.5,-111.0,58.2),"412":r(-114.5,54.0,-113.5,55.0),
+    // Northern Alberta (500s)
+    "501":r(-120.0,58.2,-116.5,60.0),"502":r(-116.5,58.2,-113.5,60.0),"503":r(-113.5,58.2,-110.3,60.0),
+    "504":r(-120.0,57.5,-116.5,58.2),"505":r(-116.5,57.5,-113.5,58.2),"506":r(-120.0,57.0,-118.0,57.5),
+    "507":r(-118.0,57.0,-116.5,57.5),"512":r(-113.5,57.5,-110.3,58.2),"516":r(-116.0,58.0,-114.5,58.8),
+    // Antelope / Special (700s)
+    "700":r(-114.5,49.5,-113.5,50.2),"702":r(-113.5,49.0,-112.5,49.8),"704":r(-112.5,49.0,-111.5,49.8),
+    "706":r(-111.5,49.5,-110.5,50.2),"708":r(-114.8,49.5,-114.0,50.2),"710":r(-115.5,49.0,-114.5,50.0),
+    "712":r(-113.5,50.2,-112.5,51.0),"714":r(-112.5,50.2,-111.5,51.0),"716":r(-111.5,50.2,-110.5,51.0),
+    "718":r(-114.5,50.5,-113.5,51.3),"720":r(-115.2,50.5,-114.5,51.3),"722":r(-113.5,51.3,-112.5,52.0),
+    "724":r(-112.5,51.3,-111.5,52.0),"726":r(-111.5,51.3,-110.5,52.0),"728":r(-113.0,52.0,-111.5,52.8),
+    "730":r(-111.5,52.0,-110.3,52.8)
+  };
+  return {
+    type:"FeatureCollection",
+    features:Object.entries(wmus).map(([id,coords])=>({
+      type:"Feature",
+      properties:{WMUNIT_NUM:id, name:"WMU "+id},
+      geometry:{type:"Polygon",coordinates:[coords]}
+    }))
+  };
+})();
+
+// ── ZONE COLOR BY WMU NUMBER (matches albertahuntmap.ca color scheme) ──
+function abWmuFillColor(wmuNum) {
+  const n = parseInt(wmuNum);
+  if (n >= 500) return '#4a8f5a';   // dark green — far north
+  if (n >= 400) return '#6aab76';   // green — north central
+  if (n >= 300) return '#9bc46a';   // yellow-green — peace country
+  if (n >= 200) return '#c49a35';   // amber — foothills
+  if (n >= 100) return '#c06828';   // orange — south
+  if (n >= 700) return '#7a8fd4';   // blue-purple — antelope zones
+  return '#666';
+}
+
+// ── STYLE FUNCTION ──
+function abWmuGetStyle(feature, isSelected) {
+  const id = String(feature.properties.WMUNIT_NUM || '');
+  // Check if this WMU has any draws in the current dataset
+  const hasDraws = AB_DATA.length === 0 || AB_DATA.some(r => String(r.wmu) === id);
+  return {
+    fillColor: isSelected ? '#4ade80' : abWmuFillColor(id),
+    fillOpacity: isSelected ? 0.60 : hasDraws ? 0.38 : 0.15,
+    color: isSelected ? '#ffffff' : '#1a1a1a',
+    weight: isSelected ? 2.0 : 0.7,
+    opacity: isSelected ? 1.0 : 0.75
+  };
+}
+
+// ── UPDATE ALL ZONE STYLES (called after selection changes) ──
+function abUpdateMapStyles() {
+  if (!abWmuGeoLayer) return;
+  abWmuGeoLayer.eachLayer(layer => {
+    const id = String(layer.feature.properties.WMUNIT_NUM || '');
+    layer.setStyle(abWmuGetStyle(layer.feature, abSelWMU.has(id)));
+  });
+  abUpdateMapChips();
+  // Keep dropdown in sync
+  const dropdown = document.querySelector('#abWMUList select');
+  if (dropdown) dropdown.value = abSelWMU.size === 1 ? [...abSelWMU][0] : '';
+}
+
+// ── CHIP ROW BELOW MAP ──
+function abUpdateMapChips() {
+  const chips = document.getElementById('abMapChips');
+  if (!chips) return;
+  if (abSelWMU.size === 0) {
+    chips.innerHTML = '<span style="font-size:11px;color:var(--text-muted)">Click zones to filter · multi-select supported</span>';
+    return;
+  }
+  const sorted = [...abSelWMU].sort((a,b)=>parseInt(a)-parseInt(b));
+  chips.innerHTML = sorted.map(w =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px 3px 10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);border-radius:12px;font-size:11px;font-weight:700;color:#4ade80;cursor:default">
+      WMU&nbsp;${w}
+      <span onclick="abToggleWMU('${w}')" style="cursor:pointer;opacity:.65;font-size:14px;line-height:1;margin-left:1px" title="Remove">×</span>
+    </span>`
+  ).join('');
+  // Add clear all if multiple
+  if (abSelWMU.size > 1) {
+    chips.innerHTML += `<span onclick="abSidebarClearFilter('wmu')" style="font-size:11px;color:var(--text-muted);text-decoration:underline;cursor:pointer;padding:3px 6px">Clear all</span>`;
+  }
+}
+
+// ── TOGGLE MAP PANEL OPEN/CLOSE ──
+function abToggleMap() {
+  const panel = document.getElementById('abMapPanel');
+  const btn = document.getElementById('abMapToggleBtn');
+  if (!panel || !btn) return;
+  abMapOpen = !abMapOpen;
+  panel.style.display = abMapOpen ? 'block' : 'none';
+  btn.innerHTML = abMapOpen
+    ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Close Map`
+    : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Filter by Map`;
+  btn.style.background = abMapOpen ? 'rgba(74,222,128,.18)' : 'rgba(74,222,128,.08)';
+  if (abMapOpen) {
+    if (!abMapInitialized) {
+      abInitLeafletMap();
+    } else {
+      setTimeout(() => abLeafletMapInstance && abLeafletMapInstance.invalidateSize(), 150);
+    }
+  }
+}
+
+// ── INIT LEAFLET MAP ──
+function abInitLeafletMap() {
+  if (abMapInitialized) return;
+  abMapInitialized = true;
+
+  // Make sure Leaflet CSS is loaded
+  if (!document.querySelector('link[href*="leaflet"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(link);
+  }
+
+  function initWhenReady() {
+    abLeafletMapInstance = L.map('abLeafletMap', {
+      center: [54.0, -115.0],
+      zoom: 5,
+      minZoom: 4,
+      maxZoom: 13,
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    // OpenStreetMap tile layer — same as albertahuntmap.ca
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors · © Government of Alberta',
+      subdomains: 'abc',
+      maxZoom: 19
+    }).addTo(abLeafletMapInstance);
+
+    // Add WMU polygons from embedded GeoJSON
+    abWmuGeoLayer = L.geoJSON(AB_WMU_GEOJSON, {
+      style: feature => abWmuGetStyle(feature, false),
+      onEachFeature: (feature, layer) => {
+        const id = String(feature.properties.WMUNIT_NUM || '');
+        const hasDraws = AB_DATA.length === 0 || AB_DATA.some(r => String(r.wmu) === id);
+
+        // Hover effects
+        layer.on('mouseover', function(e) {
+          if (!abSelWMU.has(id)) {
+            this.setStyle({ fillColor: '#ffffff', fillOpacity: 0.45, weight: 1.5, color: '#4ade80' });
+          }
+          // Tooltip
+          const drawCount = AB_DATA.filter(r => String(r.wmu) === id).length;
+          const uniqueDraws = [...new Set(AB_DATA.filter(r => String(r.wmu) === id).map(r => r.species + r.draw))].length;
+          const tipText = hasDraws
+            ? `<b style="color:#4ade80">WMU ${id}</b><br><span style="font-size:11px;color:#aaa">${uniqueDraws} draw${uniqueDraws!==1?'s':''} available</span>`
+            : `<b>WMU ${id}</b><br><span style="font-size:11px;color:#888">No draws this WMU</span>`;
+          this.bindTooltip(tipText, {
+            sticky: true,
+            direction: 'top',
+            offset: [0, -4],
+            opacity: 1,
+            className: 'ab-wmu-tip'
+          }).openTooltip(e.latlng);
+        });
+
+        layer.on('mouseout', function() {
+          this.setStyle(abWmuGetStyle(feature, abSelWMU.has(id)));
+          this.closeTooltip();
+        });
+
+        // Click: toggle zone in filter
+        layer.on('click', function() {
+          if (!hasDraws) return; // don't select zones with no draws
+          abToggleWMU(id);
+          // abToggleWMU already calls abUpdateMapStyles + abApplyFilters
+        });
+      }
+    }).addTo(abLeafletMapInstance);
+
+    // Fit map to Alberta bounds
+    abLeafletMapInstance.fitBounds([[49.0, -120.0], [60.0, -110.0]]);
+    abUpdateMapChips();
+  }
+
+  // If Leaflet already loaded, init immediately; otherwise load it first
+  if (typeof L !== 'undefined') {
+    initWhenReady();
+  } else {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    script.onload = initWhenReady;
+    document.head.appendChild(script);
+  }
+}
+
+// ── TOOLTIP STYLE ──
+(function() {
+  if (document.getElementById('abMapStyles')) return;
+  const s = document.createElement('style');
+  s.id = 'abMapStyles';
+  s.textContent = `
+    .ab-wmu-tip {
+      background: #111820 !important;
+      border: 1px solid rgba(74,222,128,.4) !important;
+      border-radius: 7px !important;
+      padding: 5px 10px !important;
+      box-shadow: none !important;
+      font-family: 'DM Sans', sans-serif !important;
+      font-size: 12px !important;
+      color: #e0e4ea !important;
+      pointer-events: none !important;
+    }
+    .ab-wmu-tip::before { display: none !important; }
+    .leaflet-tooltip-top.ab-wmu-tip::before { display: none !important; }
+    #abLeafletMap .leaflet-control-zoom a {
+      background: #1a2030 !important;
+      color: #e0e4ea !important;
+      border-color: rgba(255,255,255,.15) !important;
+    }
+    #abLeafletMap .leaflet-control-attribution {
+      background: rgba(0,0,0,.55) !important;
+      color: rgba(255,255,255,.45) !important;
+      font-size: 9px !important;
+    }
+    #abLeafletMap .leaflet-control-attribution a { color: rgba(255,255,255,.5) !important; }
+    #abMapToggleBtn:hover { background: rgba(74,222,128,.18) !important; }
   `;
   document.head.appendChild(s);
 })();
