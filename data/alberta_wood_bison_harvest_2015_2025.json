@@ -1,0 +1,92 @@
+{
+  "species": "wood_bison",
+  "jurisdiction": "Alberta",
+  "records": [
+    {
+      "season_year": "2015-16",
+      "season_status": "Open",
+      "licences_issued": 155,
+      "total_harvest": 72,
+      "success_rate_percent": 46.5
+    },
+    {
+      "season_year": "2016-17",
+      "season_status": "Open",
+      "licences_issued": 155,
+      "total_harvest": 68,
+      "success_rate_percent": 43.9
+    },
+    {
+      "season_year": "2017-18",
+      "season_status": "Open",
+      "licences_issued": 105,
+      "total_harvest": 44,
+      "success_rate_percent": 41.9
+    },
+    {
+      "season_year": "2018-19",
+      "season_status": "Suspended",
+      "licences_issued": 0,
+      "total_harvest": 0,
+      "success_rate_percent": 0.0
+    },
+    {
+      "season_year": "2019-20",
+      "season_status": "Suspended",
+      "licences_issued": 0,
+      "total_harvest": 0,
+      "success_rate_percent": 0.0
+    },
+    {
+      "season_year": "2020-21",
+      "season_status": "Suspended",
+      "licences_issued": 0,
+      "total_harvest": 0,
+      "success_rate_percent": 0.0
+    },
+    {
+      "season_year": "2021-22",
+      "season_status": "Suspended",
+      "licences_issued": 0,
+      "total_harvest": 0,
+      "success_rate_percent": 0.0
+    },
+    {
+      "season_year": "2022-23",
+      "season_status": "Suspended",
+      "licences_issued": 0,
+      "total_harvest": 0,
+      "success_rate_percent": 0.0
+    },
+    {
+      "season_year": "2023-24",
+      "season_status": "Open",
+      "licences_issued": 100,
+      "total_harvest": 51,
+      "success_rate_percent": 51.0
+    },
+    {
+      "season_year": "2024-25",
+      "season_status": "Suspended",
+      "licences_issued": 0,
+      "total_harvest": 0,
+      "success_rate_percent": 0.0
+    },
+    {
+      "season_year": "2025-26",
+      "season_status": "Open",
+      "licences_issued": null,
+      "licences_issued_note": "100+ (Est.)",
+      "total_harvest": null,
+      "total_harvest_note": "Ongoing",
+      "success_rate_percent": null
+    }
+  ],
+  "historical_summary_by_wmu": {},
+  "source_files": [],
+  "notes": [
+    "Wood bison data is province-level and does not include WMU-level harvest breakdowns, so historical_summary_by_wmu is empty.",
+    "2025-26 is still ongoing. Licences issued and harvest totals are not final.",
+    "This JSON was created from user-provided summary data, not extracted from source PDFs."
+  ]
+}
