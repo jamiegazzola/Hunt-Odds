@@ -1,0 +1,54 @@
+region,region_name,species,management_units,class,season_open,season_close,weapon_type,bag_limit,notes
+3,Thompson,Mule Deer (Black-tailed),3-15 to 3-16 | 3-32 to 3-33,4 Point Bucks,Sept 1,Sept 9,Rifle,1 (region),Antlers must accompany species licence
+3,Thompson,Mule Deer (Black-tailed),3-12 to 3-20 | 3-26 to 3-44,4 Point Bucks,Sept 10,Sept 30,Rifle,1 (region),Antlers must accompany species licence
+3,Thompson,Mule Deer (Black-tailed),3-46,4 Point Bucks,Sept 20,Sept 30,Rifle,1 (region),Antlers must accompany species licence
+3,Thompson,Mule Deer (Black-tailed),3-12 to 3-20 | 3-26 to 3-44 | 3-46,Bucks,Oct 1,Oct 31,Rifle,1 (region),
+3,Thompson,Mule Deer (Black-tailed),3-12 to 3-20 | 3-26 to 3-44 | 3-46,4 Point Bucks,Nov 1,Dec 10,Rifle,1 (region),Antlers must accompany species licence
+3,Thompson,Mule Deer (Black-tailed),3-12 to 3-14 | 3-17 to 3-20 | 3-26 to 3-31 | 3-34 to 3-44,Bucks,Sept 1,Sept 9,Youth Only,1 (region),Restricted to hunters under 18
+3,Thompson,Mule Deer (Black-tailed),3-12 to 3-14 | 3-17 to 3-20 | 3-26 to 3-31 | 3-34 to 3-44,Bucks,Sept 1,Sept 9,Bow Only,1 (region),
+3,Thompson,White-tailed Deer,3-12 to 3-20 | 3-26 to 3-44,Bucks,Sept 10,Dec 10,Rifle,2 either sex (region),
+3,Thompson,White-tailed Deer,3-46,Bucks,Sept 20,Dec 10,Rifle,2 either sex (region),
+3,Thompson,White-tailed Deer,3-12 to 3-20 | 3-26 to 3-44 | 3-46,Antlerless,Oct 10,Oct 31,Rifle,2 either sex (region),
+3,Thompson,White-tailed Deer,3-12 to 3-20 | 3-26 to 3-44 | 3-46,Either Sex,Nov 1,Nov 30,Youth Only,2 either sex (region),Restricted to hunters under 18
+3,Thompson,White-tailed Deer,3-12 to 3-20 | 3-26 to 3-44 | 3-46,Bucks,Sept 1,Sept 9,Youth Only,2 either sex (region),Restricted to hunters under 18
+3,Thompson,White-tailed Deer,3-12 to 3-20 | 3-26 to 3-44,Bucks,Sept 1,Sept 9,Bow Only,2 either sex (region),
+3,Thompson,Moose,3-34 to 3-38 | 3-40 to 3-44 | 3-46,Spike-fork Bulls,Sept 20,Oct 31,Rifle,1,Compulsory Inspection required; antlers must accompany licence
+3,Thompson,Moose,3-15 to 3-17 | 3-31 to 3-33,Spike-fork Bulls,Oct 15,Nov 15,Rifle,1,Compulsory Inspection required; antlers must accompany licence
+3,Thompson,Moose,3-12 to 3-14 | 3-18 to 3-20 | 3-26 to 3-30 | 3-39,Spike-fork Bulls,Nov 1,Nov 15,Rifle,1,Compulsory Inspection required; antlers must accompany licence
+3,Thompson,Bighorn Mountain Sheep,3-31 | 3-32 (portion),Full Curl Bighorn Rams,Sept 10,Oct 20,Rifle,1,Compulsory Inspection required; portion of 3-32 closed — see Map C21
+3,Thompson,Bighorn Mountain Sheep,3-17 (portion),Mature Bighorn Rams,Sept 10,Oct 20,Rifle,1,See Map C2; Compulsory Inspection required
+3,Thompson,Black Bear,3-12 to 3-20 | 3-26 to 3-44,Any,Sept 1,Nov 30,Rifle,2,
+3,Thompson,Black Bear,3-46,Any,Sept 20,Nov 30,Rifle,2,
+3,Thompson,Black Bear,3-12 to 3-20 | 3-26 to 3-44 | 3-46,Any,Apr 1,June 30,Rifle,2,
+3,Thompson,Wolf,3-12 to 3-16 | 3-18 to 3-20,Any,Sept 10,June 15,Rifle,3,
+3,Thompson,Wolf,3-17 | 3-26 to 3-44,Any,No closed season,No closed season,Rifle,NBL,
+3,Thompson,Coyote,3-12 to 3-20 | 3-26 to 3-44,Any,Sept 1,June 30,Rifle,NBL,
+3,Thompson,Cougar,3-12 to 3-20 | 3-26 to 3-33,Any,Nov 15,Mar 31,Rifle,2,Compulsory Inspection required; no cougar kitten
+3,Thompson,Cougar,3-34 to 3-44,Any,Sept 10,Mar 31,Rifle,2,Compulsory Inspection required; no cougar kitten
+3,Thompson,Bobcat,3-12 to 3-20 | 3-26 to 3-44,Any,Nov 15,Feb 15,Rifle,1,Compulsory Reporting required
+3,Thompson,Lynx,3-12 to 3-20 | 3-26 to 3-44,Any,Nov 15,Feb 15,Rifle,1,Compulsory Reporting required
+3,Thompson,Raccoon,3-12 to 3-20 | 3-26 to 3-44,Any,No closed season,No closed season,Rifle,NBL,
+3,Thompson,Snowshoe Hare,3-12 to 3-20 | 3-26 to 3-44,Any,Aug 1,Apr 30,Rifle,10 per day,
+3,Thompson,Columbian Ground Squirrel,3-12 to 3-20 | 3-26 to 3-44,Any,No closed season,No closed season,Rifle,NBL,Private land only; must have landowner permission
+3,Thompson,Grouse (Dusky/Blue),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 10,Nov 30,Rifle,5 each (15 possession),Daily aggregate bag limit 10; possession 30
+3,Thompson,Grouse (Ruffed),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 10,Nov 30,Rifle,5 each (15 possession),Daily aggregate bag limit 10; possession 30
+3,Thompson,Grouse (Spruce),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 10,Nov 30,Rifle,5 each (15 possession),Daily aggregate bag limit 10; possession 30
+3,Thompson,Grouse (Dusky/Blue),3-46,Any,Sept 20,Nov 30,Rifle,5 each (15 possession),Daily aggregate bag limit 10; possession 30
+3,Thompson,Grouse (Ruffed),3-46,Any,Sept 20,Nov 30,Rifle,5 each (15 possession),Daily aggregate bag limit 10; possession 30
+3,Thompson,Grouse (Spruce),3-46,Any,Sept 20,Nov 30,Rifle,5 each (15 possession),Daily aggregate bag limit 10; possession 30
+3,Thompson,Sharp-tailed Grouse,3-30 | 3-31 (portion),Any,Sept 10,Nov 30,Rifle,5 (10 possession),No season in portion of 3-30 south of Scottie Creek FSR — see Map C18
+3,Thompson,Ptarmigan,3-12 to 3-20 | 3-26 to 3-44,Any,Sept 1,Nov 30,Rifle,5 (15 possession),
+3,Thompson,Chukar Partridge,3-12 to 3-20 | 3-26 to 3-44,Any,Oct 1,Nov 30,Rifle,5 (15 possession),
+3,Thompson,Gray Partridge (Hungarian),3-12 to 3-20 | 3-26 to 3-44,Any,Oct 1,Nov 30,Rifle,3 (9 possession),
+3,Thompson,Pheasant,3-12 to 3-20 | 3-26 to 3-44,Cocks,Oct 1,Nov 30,Rifle,2 (6 possession),
+3,Thompson,Dove (Mourning),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 1,Sept 30,Rifle,5 (15 possession),
+3,Thompson,Dove (Eurasian Collared),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 1,Sept 30,Rifle,5 (15 possession),
+3,Thompson,Band-tailed Pigeon,3-13 to 3-17,Any,Sept 15,Sept 30,Rifle,5 (15 possession),
+3,Thompson,Common Snipe,3-12 to 3-20 | 3-26 to 3-44,Any,Sept 8,Dec 23,Shotgun,10 (30 possession),
+3,Thompson,Coots,3-12 to 3-20 | 3-26 to 3-44,Any,Sept 8,Dec 23,Shotgun,10 (30 possession),
+3,Thompson,Ducks,3-12 to 3-20 | 3-26 to 3-44,Any,Sept 8,Dec 23,Shotgun,8 (24 possession),Daily aggregate 8; max 4 Pintails; 4 Canvasbacks; 2 Goldeneyes aggregate; 2 Harlequins
+3,Thompson,Geese (Snow & Ross's),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 8,Dec 23,Shotgun,5 (15 possession),
+3,Thompson,Geese (White-fronted),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 8,Dec 23,Shotgun,5 (15 possession),
+3,Thompson,Geese (Canada & Cackling),3-12 to 3-20 | 3-26 to 3-44,Any,Sept 8,Sept 20,Shotgun,10 (30 possession),
+3,Thompson,Geese (Canada & Cackling),3-12 to 3-20 | 3-26 to 3-44,Any,Oct 1,Dec 23,Shotgun,10 (30 possession),
+3,Thompson,Geese (Canada & Cackling),3-12 to 3-20 | 3-26 to 3-44,Any,Mar 1,Mar 10,Shotgun,10 (30 possession),
